@@ -30,19 +30,8 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     output: str
 
-# Helper functions
-def format_prompt(messages: Messages) -> str:
-    """Format a list of messages into a single prompt string."""
-    formatted = []
-    for msg in messages:
-        role = msg.get("type", "human")
-        content = msg.get("content", "")
-        formatted.append(f"{role}: {content}")
-    return "\n".join(formatted)
-
 # Provider implementation
 class GizAI:
-    url = "https://app.giz.ai/assistant"
     api_endpoint = "https://app.giz.ai/api/data/users/inferenceServer.infer"
     working = True
     supports_stream = False
@@ -71,8 +60,6 @@ class GizAI:
         proxy: str = None,
         **kwargs
     ) -> AsyncResult:
-        #model = "chat-gemini-flash"
-        model = "qwen-coder-32b"
         headers = {
             'Accept': 'application/json, text/plain, */*',
             'Accept-Language': 'en-US,en;q=0.9',
@@ -91,13 +78,12 @@ class GizAI:
             'sec-ch-ua-platform': '"Linux"'
         }
 
-        prompt = format_prompt(messages)
-
         data = {
-            "model": model,
+            "model": "chat",
+            "baseModel": model,
             "input": {
-                "messages": [{"type": "human", "content": prompt}],
-                "mode": "plan"
+                "messages": messages,
+                "mode": "chat"
             },
             "noStream": True
         }
@@ -106,16 +92,7 @@ class GizAI:
         print("Request to API endpoint:")
         print(json.dumps(data, indent=2))
         
-        async with ClientSession(headers=headers) as session:
-            data = {
-                "model": model,
-                "input": {
-                    "messages": [{"type": "human", "content": prompt}],
-                    "mode": "plan"
-                },
-                "noStream": True
-            }
-            
+        async with ClientSession(headers=headers) as session:           
             async with session.post(cls.api_endpoint, json=data, proxy=proxy) as response:
                 if response.status == 201:
                     result = await response.json()
