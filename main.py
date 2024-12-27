@@ -2,11 +2,16 @@ from __future__ import annotations
 
 import asyncio
 import json
-from typing import Dict, List, Optional, Union
+from typing import Dict, List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from aiohttp import ClientSession
 from enum import Enum
+
+#curl -X POST "http://localhost:8000/v1/chat/completions" \     -H "Content-Type: application/json" \
+ #    -d '{"model": "qwen-coder-32b", "messages": [{"type": "human", "content": "Are you qwen?"}]}'
+
+ # models - qwen-coder-32b, chat-gemini-flash, claude-haiku, claude-sonnet, chat-o1-mini
 
 # Type definitions
 Messages = List[Dict[str, str]]
@@ -37,20 +42,6 @@ class GizAI:
     supports_stream = False
     supports_system_message = True
     supports_message_history = True
-    default_model = 'chat-gemini-flash'
-    models = [default_model]
-    model_aliases = {
-        "gemini-flash": "chat-gemini-flash",
-    }
-
-    @classmethod
-    def get_model(cls, model: str) -> str:
-        if model in cls.models:
-            return model
-        elif model in cls.model_aliases:
-            return cls.model_aliases[model]
-        else:
-            return cls.default_model
 
     @classmethod
     async def create_async_generator(
