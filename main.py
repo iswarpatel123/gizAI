@@ -28,8 +28,6 @@ class Message(BaseModel):
     def map_role(cls, v):
         if v == "user":
             return MessageType.HUMAN
-        elif v == "system":
-            return MessageType.SYSTEM
         elif v == "assistant":
             return MessageType.AI
         return v
@@ -122,10 +120,6 @@ class GizAI:
             "noStream": True
         }
         
-        # Print request body
-        print("Request to API endpoint:")
-        print(json.dumps(data, indent=2))
-        
         async with ClientSession(headers=headers) as session:           
             async with session.post(cls.api_endpoint, json=data, proxy=proxy) as response:
                 if response.status == 201:
@@ -176,10 +170,8 @@ async def chat_completions(request: ChatRequest):
             object='chat.completion',
             system_fingerprint=None,
             usage=Usage(completion_tokens=0, prompt_tokens=0, total_tokens=0),
-            output=response
         )
         
-        print("Raw response body:", chat_response.model_dump_json(indent=2))
         return chat_response
 
     except Exception as e:
