@@ -4,9 +4,14 @@ import asyncio
 import json
 from typing import Dict, List
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 from aiohttp import ClientSession
 from enum import Enum
+
+#curl -X POST "http://localhost:8000/v1/chat/completions" \     -H "Content-Type: application/json" \
+ #    -d '{"model": "qwen-coder-32b", "messages": [{"type": "human", "content": "Are you qwen?"}]}'
+
+ # models - qwen-coder-32b, chat-gemini-flash, claude-haiku, claude-sonnet, chat-o1-mini
 
 # Type definitions
 Messages = List[Dict[str, str]]
@@ -14,69 +19,21 @@ AsyncResult = asyncio.Future
 
 class MessageType(str, Enum):
     HUMAN = "human"
-    AI = "ai"
+    ASSISTANT = "assistant"
     SYSTEM = "system"
-    ASSISTANT = "assistant"  # Add assistant
 
 class Message(BaseModel):
-    content: str | None = None
-    role: MessageType | None = None
-    tool_calls: List | None = None
-    function_call: dict | None = None
-
-    @field_validator("role", mode="before")
-    def map_role(cls, v):
-        if v == "user":
-            return MessageType.HUMAN
-        elif v == "system":
-            return MessageType.SYSTEM
-        elif v == "assistant":
-            return MessageType.AI
-        return v
-
-class ResponseMessage(BaseModel):
-    content: str | None = None
-    role: MessageType
-    tool_calls: List | None = None
-    function_call: dict | None = None
-
-    @field_validator("role", mode="before")
-    def map_role(cls, v):
-        if v == "user":
-            return MessageType.HUMAN
-        elif v == "assistant":
-            return MessageType.ASSISTANT
-        elif v == "system":
-            return MessageType.SYSTEM
-        return v
-
-class Choices(BaseModel):
-    finish_reason: str | None = None
-    index: int | None = None
-    message: ResponseMessage | None = None  # Use ResponseMessage
-
-class Usage(BaseModel):
-    completion_tokens: int | None = None
-    prompt_tokens: int | None = None
-    total_tokens: int | None = None
-    completion_tokens_details: List | None = None
-    prompt_tokens_details: List | None = None
+    type: MessageType
+    content: str
 
 class ChatRequest(BaseModel):
     model: str
     messages: List[Message]
-    temperature: float | None = None
+    mode: str = "plan"
+    noStream: bool = True
 
 class ChatResponse(BaseModel):
-    id: str | None = None
-    choices: List[Choices] | None = None
-    created: int | None = None
-    model: str | None = None
-    object: str | None = None
-    service_tier: str | None = None
-    system_fingerprint: str | None = None
-    usage: Usage | None = None
-    output: str | None = None
+    output: str
 
 # Provider implementation
 class GizAI:
@@ -142,7 +99,7 @@ async def chat_completions(request: ChatRequest):
     try:
         # Convert the request messages to the format expected by GizAI
         messages = [
-            {"type": msg.role.value, "content": msg.content}
+            {"type": msg.type, "content": msg.content}
             for msg in request.messages
         ]
         
@@ -159,34 +116,14 @@ async def chat_completions(request: ChatRequest):
             break
             
         if response is None:
-            print("No response generated")
             raise HTTPException(status_code=500, detail="No response generated")
             
-        chat_response = ChatResponse(
-            id='chatcmpl-dc4f6c13-7739-4acc-8940-ec822ccb24dc',
-            choices=[
-                Choices(
-                    finish_reason='stop',
-                    index=0,
-                    message=ResponseMessage(content=response, role=MessageType.ASSISTANT)  # Use ResponseMessage and MessageType.ASSISTANT
-                )
-            ],
-            created=1735359843,
-            model=request.model,
-            object='chat.completion',
-            system_fingerprint=None,
-            usage=Usage(completion_tokens=0, prompt_tokens=0, total_tokens=0),
-            output=response
-        )
+        return ChatResponse(output=response)
         
-        print("Raw response body:", chat_response.model_dump_json(indent=2))
-        return chat_response
-
     except Exception as e:
-        print("Error:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 # Configuration and startup
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8001)
