@@ -13,7 +13,7 @@ from enum import Enum
 
  # models - qwen-coder-32b, chat-gemini-flash, claude-haiku, claude-sonnet, chat-o1-mini
 
- # aider --model openai/gpt-4o-2024-08-06 --no-auto-commits --no-dirty-commits --openai-api-base http://localhost:8000/v1 --openai-api-key glhf --no-stream
+ # aider --model openai/gpt-4o-mini-2024-07-18 --no-auto-commits --no-dirty-commits --openai-api-base http://localhost:8000/v1 --openai-api-key glhf --no-stream
 
 #  async def chat_completions(request: Request):
 #     try:
