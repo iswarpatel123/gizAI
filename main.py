@@ -3,10 +3,24 @@ from __future__ import annotations
 import asyncio
 import json
 from typing import Dict, List
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, field_validator
 from aiohttp import ClientSession
 from enum import Enum
+
+def map_model(model: str) -> str:
+    model_mapping = {
+        "gpt-4-turbo": "claude-sonnet",
+        "o1-mini": "chat-o1-mini",
+        "gpt-4": "deepseek",
+        "o1-preview": "claude-haiku",
+        "gpt-4o": "chat-gpt4",
+        "gpt-4o-mini": "chat-gpt4m",
+        "gpt-4o-2024-08-06": "qwen-coder-32b",
+        "gpt-4o-mini-2024-07-18": "mistral-large",
+    }
+    default_model = "claude-sonnet"  # Define a default model
+    return model_mapping.get(model, default_model)
 
 # Type definitions
 Messages = List[Dict[str, str]]
@@ -142,7 +156,7 @@ async def chat_completions(request: ChatRequest):
         
         # Create async generator
         async_gen = GizAI.create_async_generator(
-            model=request.model,
+            model=map_model(request.model),
             messages=messages
         )
         
@@ -157,7 +171,6 @@ async def chat_completions(request: ChatRequest):
             raise HTTPException(status_code=500, detail="No response generated")
             
         chat_response = ChatResponse(
-            id='chatcmpl-dc4f6c13-7739-4acc-8940-ec822ccb24dc',
             choices=[
                 Choices(
                     finish_reason='stop',
@@ -165,11 +178,6 @@ async def chat_completions(request: ChatRequest):
                     message=ResponseMessage(content=response, role=MessageType.ASSISTANT)  # Use ResponseMessage and MessageType.ASSISTANT
                 )
             ],
-            created=1735359843,
-            model=request.model,
-            object='chat.completion',
-            system_fingerprint=None,
-            usage=Usage(completion_tokens=0, prompt_tokens=0, total_tokens=0),
         )
         
         return chat_response

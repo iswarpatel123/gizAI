@@ -13,6 +13,20 @@ from enum import Enum
 
  # models - qwen-coder-32b, chat-gemini-flash, claude-haiku, claude-sonnet, chat-o1-mini
 
+ # aider --model openai/gpt-4o-2024-08-06 --no-auto-commits --no-dirty-commits --openai-api-base http://localhost:8000/v1 --openai-api-key glhf --no-stream
+
+#  async def chat_completions(request: Request):
+#     try:
+#         # Print the entire request
+#         print("Request:", await request.json())
+        
+#         # Convert the request messages to the format expected by GizAI
+#         request_data = await request.json()
+#         messages = [
+#             {"type": msg["role"], "content": msg["content"]}
+#             for msg in request_data["messages"]
+#         ]
+
 # Type definitions
 Messages = List[Dict[str, str]]
 AsyncResult = asyncio.Future
