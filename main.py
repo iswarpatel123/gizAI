@@ -18,7 +18,7 @@ def map_model(model: str) -> str:
         "gpt-4o-mini": "chat-gpt4m",
         "gpt-4o-2024-08-06": "qwen-coder-32b",
         "gpt-4o-mini-2024-07-18": "chat-gemini-exp-1206",
-        "mistral-large": "mistral-large"
+        "gpt-4o-mini-2024-07-18": "mistral-large",
     }
     default_model = "claude-sonnet"  # Define a default model
     return model_mapping.get(model, default_model)
@@ -33,16 +33,8 @@ class MessageType(str, Enum):
     SYSTEM = "system"
     ASSISTANT = "assistant"  # Add assistant
 
-class ImageUrl(BaseModel):
-    url: str
-
-class ContentItem(BaseModel):
-    type: str
-    text: str | None = None
-    image_url: ImageUrl | None = None
-
 class Message(BaseModel):
-    content: str | List[ContentItem] | None = None
+    content: str | None = None
     role: MessageType | None = None
     tool_calls: List | None = None
     function_call: dict | None = None
@@ -158,24 +150,10 @@ app = FastAPI(title="LLM Proxy Server")
 async def chat_completions(request: ChatRequest):
     try:
         # Convert the request messages to the format expected by GizAI
-        messages = []
-        for msg in request.messages:
-            if isinstance(msg.content, str):
-                messages.append({
-                    "type": msg.role.value,
-                    "content": msg.content
-                })
-            elif isinstance(msg.content, list):
-                content_parts = []
-                for content_item in msg.content:
-                    if content_item.type == "text" and content_item.text:
-                        content_parts.append(content_item.text)
-                    elif content_item.type == "image_url" and content_item.image_url:
-                        content_parts.append(f"[Image: {content_item.image_url.url}]")
-                messages.append({
-                    "type": msg.role.value,
-                    "content": "\n".join(content_parts)
-                })
+        messages = [
+            {"type": msg.role.value, "content": msg.content}
+            for msg in request.messages
+        ]
         
         # Create async generator
         async_gen = GizAI.create_async_generator(
