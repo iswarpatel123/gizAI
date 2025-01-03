@@ -18,7 +18,7 @@ def map_model(model: str) -> str:
         "gpt-4o-mini": "chat-gpt4m",
         "gpt-4o-2024-08-06": "qwen-coder-32b",
         "gpt-4o-mini-2024-07-18": "chat-gemini-exp-1206",
-        "gpt-4o-mini-2024-07-18": "mistral-large",
+        "mistral-large": "mistral-large"
     }
     default_model = "claude-sonnet"  # Define a default model
     return model_mapping.get(model, default_model)
@@ -33,8 +33,16 @@ class MessageType(str, Enum):
     SYSTEM = "system"
     ASSISTANT = "assistant"  # Add assistant
 
+class ImageUrl(BaseModel):
+    url: str
+
+class ContentItem(BaseModel):
+    type: str
+    text: str | None = None
+    image_url: ImageUrl | None = None
+
 class Message(BaseModel):
-    content: str | None = None
+    content: str | List[ContentItem] | None = None
     role: MessageType | None = None
     tool_calls: List | None = None
     function_call: dict | None = None
@@ -134,6 +142,8 @@ class GizAI:
             },
             "noStream": True
         }
+
+        print(data)
         
         async with ClientSession(headers=headers) as session:           
             async with session.post(cls.api_endpoint, json=data, proxy=proxy) as response:
@@ -150,10 +160,24 @@ app = FastAPI(title="LLM Proxy Server")
 async def chat_completions(request: ChatRequest):
     try:
         # Convert the request messages to the format expected by GizAI
-        messages = [
-            {"type": msg.role.value, "content": msg.content}
-            for msg in request.messages
-        ]
+        messages = []
+        for msg in request.messages:
+            if isinstance(msg.content, str):
+                messages.append({
+                    "type": msg.role.value,
+                    "content": msg.content
+                })
+            elif isinstance(msg.content, list):
+                content_parts = []
+                for content_item in msg.content:
+                    if content_item.type == "text" and content_item.text:
+                        content_parts.append(content_item.text)
+                    elif content_item.type == "image_url" and content_item.image_url:
+                        content_parts.append(content_item.image_url.url)
+                messages.append({
+                    "type": msg.role.value,
+                    "content": "\n".join(content_parts)
+                })
         
         # Create async generator
         async_gen = GizAI.create_async_generator(
