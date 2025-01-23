@@ -18,7 +18,9 @@ def map_model(model: str) -> str:
         "gpt-4o-mini": "chat-gpt4m",
         "gpt-4o-2024-08-06": "qwen-coder-32b",
         "gpt-4o-mini-2024-07-18": "chat-gemini-exp-1206",
-        "mistral-large": "mistral-large"
+        "mistral-large": "mistral-large",
+        "deepseek-reasoner": "deepseek-reasoner",
+        "minimax-01": "minimax-01"
     }
     default_model = "claude-sonnet"  # Define a default model
     return model_mapping.get(model, default_model)
@@ -142,8 +144,6 @@ class GizAI:
             },
             "noStream": True
         }
-
-        print(data)
         
         async with ClientSession(headers=headers) as session:           
             async with session.post(cls.api_endpoint, json=data, proxy=proxy) as response:
@@ -151,6 +151,7 @@ class GizAI:
                     result = await response.json()
                     yield result['output'].strip()
                 else:
+                    print(response)
                     raise Exception(f"Unexpected response status: {response.status}")
 
 # FastAPI application
