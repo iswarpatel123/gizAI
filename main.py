@@ -9,21 +9,7 @@ from aiohttp import ClientSession
 from enum import Enum
 
 def map_model(model: str) -> str:
-    model_mapping = {
-        "gpt-4-turbo": "claude-sonnet",
-        "o1-mini": "chat-o1-mini",
-        "gpt-4": "deepseek",
-        "o1-preview": "claude-haiku",
-        "gpt-4o": "chat-gpt4",
-        "gpt-4o-mini": "chat-gpt4m",
-        "gpt-4o-2024-08-06": "qwen-coder-32b",
-        "gpt-4o-mini-2024-07-18": "chat-gemini-exp-1206",
-        "mistral-large": "mistral-large",
-        "deepseek-reasoner": "deepseek-reasoner",
-        "minimax-01": "minimax-01"
-    }
-    default_model = "claude-sonnet"  # Define a default model
-    return model_mapping.get(model, default_model)
+    return model
 
 # Type definitions
 Messages = List[Dict[str, str]]
@@ -107,7 +93,10 @@ class GizAI:
     working = True
     supports_stream = False
     supports_system_message = True
+    request_delay = 30  # Configurable delay in seconds between requests
     supports_message_history = True
+
+    last_request_time = None  # Track the timestamp of the last API call
 
     @classmethod
     async def create_async_generator(
@@ -145,7 +134,17 @@ class GizAI:
             "noStream": True
         }
         
-        async with ClientSession(headers=headers) as session:           
+        # Calculate delay based on the last request time
+        if cls.last_request_time is not None:
+            elapsed_time = asyncio.get_event_loop().time() - cls.last_request_time
+            delay = max(0, cls.request_delay - elapsed_time)  # Wait up to configured delay seconds
+            if delay > 0:
+                await asyncio.sleep(delay)
+
+        # Update the last request time
+        cls.last_request_time = asyncio.get_event_loop().time()
+
+        async with ClientSession(headers=headers) as session:
             async with session.post(cls.api_endpoint, json=data, proxy=proxy) as response:
                 if response.status == 201:
                     result = await response.json()
@@ -159,6 +158,7 @@ app = FastAPI(title="LLM Proxy Server")
 
 @app.post("/v1/chat/completions", response_model=ChatResponse)
 async def chat_completions(request: ChatRequest):
+    print("new request")
     try:
         # Convert the request messages to the format expected by GizAI
         messages = []

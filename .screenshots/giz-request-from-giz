@@ -1,0 +1,28 @@
+{
+    "model": "chat",
+    "baseModel": "chat-gemini-flash-exp",
+    "input": {
+      "messages": [
+        {
+          "type": "human",
+          "content": [
+            {
+              "type": "image_url",
+              "image_url": {
+                "url": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAkACQAAD"
+              }
+            },
+            {
+              "type": "text",
+              "text": "Image file: .screenshots/30.jpg"
+            }
+          ],
+          "unsaved": true
+        }
+      ],
+      "prompt": "explain the screenshot",
+      "mode": "chat"
+    },
+    "subscribeId": "z9fjGKszZtftCWMjPaSWF",
+    "instanceId": "uNzFOCX4IMy5p_KBLXiUy"
+  }
