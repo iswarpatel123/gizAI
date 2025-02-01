@@ -1,0 +1,20 @@
+See giz.py which sends inference to Giz. Make one for blackbox in blackbox.py. Blackbox is simpler coz there are no headers, and no role to type conversion.
+ChatResponse should be sent back
+
+url = "https://api.blackbox.ai/api/chat"
+
+payload = json.dumps({
+  "messages": [
+    {
+      "content": "make a simple python function",
+      "role": "user"
+    }
+  ],
+  "model": "deepseek-ai/DeepSeek-R1",
+  "max_tokens": "1024"
+})
+headers = {
+  'Content-Type': 'application/json'
+}
+
+response = requests.request("POST", url, headers=headers, data=payload)
