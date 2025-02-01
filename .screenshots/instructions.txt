@@ -1,20 +1,151 @@
-See giz.py which sends inference to Giz. Make one for blackbox in blackbox.py. Blackbox is simpler coz there are no headers, and no role to type conversion.
-ChatResponse should be sent back
+I want to use Qwen/Qwen2.5-Max-Demo as inference endpoint. 
 
-url = "https://api.blackbox.ai/api/chat"
+Below is code given
 
-payload = json.dumps({
-  "messages": [
-    {
-      "content": "make a simple python function",
-      "role": "user"
-    }
-  ],
-  "model": "deepseek-ai/DeepSeek-R1",
-  "max_tokens": "1024"
-})
-headers = {
-  'Content-Type': 'application/json'
-}
+from gradio_client import Client
 
-response = requests.request("POST", url, headers=headers, data=payload)
+client = Client("Qwen/Qwen2.5-Max-Demo")
+
+result = client.predict(
+		query="Now add $2. How much do you have now?",
+		history=[],
+		system="You are a helpful assistant.",
+		api_name="/model_chat"
+)
+
+print(result)
+
+
+Below is HuggingFace Documentation. 
+
+1. Install the python client (docs) if you don't already have it installed.
+
+copy
+$ pip install gradio_client
+2. Find the API endpoint below corresponding to your desired function in the app. Copy the code snippet, replacing the placeholder values with your own input data. If this is a private Space, you may need to pass your Hugging Face token as well (read more). Or use the 
+API Recorder
+
+ to automatically generate your API requests.
+
+api_name: /model_chat
+copy
+from gradio_client import Client
+
+client = Client("Qwen/Qwen2.5-Max-Demo")
+result = client.predict(
+		query="Hello!!",
+		history=[],
+		system="You are a helpful assistant.",
+		api_name="/model_chat"
+)
+print(result)
+Accepts 3 parameters:
+query str Required
+
+The input value that is provided in the "Input" Textbox component.
+
+history tuple[str | dict(file: filepath, alt_text: str | None) | dict(component: str, value: Any, constructor_args: dict(), props: dict()) | None, str | dict(file: filepath, alt_text: str | None) | dict(component: str, value: Any, constructor_args: dict(), props: dict()) | None] Default: []
+
+The input value that is provided in the "qwen2.5-max" Chatbot component. null
+
+system str Default: "You are a helpful assistant."
+
+The input value that is provided in the "parameter_8" Textbox component.
+
+Returns tuple of 3 elements
+[0] str
+
+The output value that appears in the "Input" Textbox component.
+
+[1] tuple[str | dict(file: filepath, alt_text: str | None) | dict(component: str, value: Any, constructor_args: dict(), props: dict()) | None, str | dict(file: filepath, alt_text: str | None) | dict(component: str, value: Any, constructor_args: dict(), props: dict()) | None]
+
+The output value that appears in the "qwen2.5-max" Chatbot component.
+
+[2] str
+
+The output value that appears in the "System" Textbox component.
+
+api_name: /model_chat_1
+copy
+from gradio_client import Client
+
+client = Client("Qwen/Qwen2.5-Max-Demo")
+result = client.predict(
+		query="Hello!!",
+		history=[],
+		system="You are a helpful assistant.",
+		api_name="/model_chat_1"
+)
+print(result)
+Accepts 3 parameters:
+query str Required
+
+The input value that is provided in the "Input" Textbox component.
+
+history tuple[str | dict(file: filepath, alt_text: str | None) | dict(component: str, value: Any, constructor_args: dict(), props: dict()) | None, str | dict(file: filepath, alt_text: str | None) | dict(component: str, value: Any, constructor_args: dict(), props: dict()) | None] Default: []
+
+The input value that is provided in the "qwen2.5-max" Chatbot component. null
+
+system str Default: "You are a helpful assistant."
+
+The input value that is provided in the "parameter_8" Textbox component.
+
+Returns tuple of 3 elements
+[0] str
+
+The output value that appears in the "Input" Textbox component.
+
+[1] tuple[str | dict(file: filepath, alt_text: str | None) | dict(component: str, value: Any, constructor_args: dict(), props: dict()) | None, str | dict(file: filepath, alt_text: str | None) | dict(component: str, value: Any, constructor_args: dict(), props: dict()) | None]
+
+The output value that appears in the "qwen2.5-max" Chatbot component.
+
+[2] str
+
+The output value that appears in the "System" Textbox component.
+
+api_name: /clear_session
+copy
+from gradio_client import Client
+
+client = Client("Qwen/Qwen2.5-Max-Demo")
+result = client.predict(
+		api_name="/clear_session"
+)
+print(result)
+Accepts 0 parameters:
+Returns tuple of 2 elements
+[0] str
+
+The output value that appears in the "Input" Textbox component.
+
+[1] tuple[str | dict(file: filepath, alt_text: str | None) | dict(component: str, value: Any, constructor_args: dict(), props: dict()) | None, str | dict(file: filepath, alt_text: str | None) | dict(component: str, value: Any, constructor_args: dict(), props: dict()) | None]
+
+The output value that appears in the "qwen2.5-max" Chatbot component.
+
+api_name: /modify_system_session
+copy
+from gradio_client import Client
+
+client = Client("Qwen/Qwen2.5-Max-Demo")
+result = client.predict(
+		system="You are a helpful assistant.",
+		api_name="/modify_system_session"
+)
+print(result)
+Accepts 1 parameter:
+system str Default: "You are a helpful assistant."
+
+The input value that is provided in the "System" Textbox component.
+
+Returns tuple of 3 elements
+[0] str
+
+The output value that appears in the "value_8" Textbox component.
+
+[1] str
+
+The output value that appears in the "System" Textbox component.
+
+[2] tuple[str | dict(file: filepath, alt_text: str | None) | dict(component: str, value: Any, constructor_args: dict(), props: dict()) | None, str | dict(file: filepath, alt_text: str | None) | dict(component: str, value: Any, constructor_args: dict(), props: dict()) | None]
+
+The output value that appears in the "qwen2.5-max" Chatbot component.
