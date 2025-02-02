@@ -27,8 +27,6 @@ class ContentItem(BaseModel):
 class Message(BaseModel):
     content: str | List[ContentItem] | None = None
     role: MessageType | None = None
-    tool_calls: List | None = None
-    function_call: dict | None = None
 
     @field_validator("role", mode="before")
     def map_role(cls, v):
@@ -122,11 +120,26 @@ class BlackboxAI:
 
 @app.post("/v1/chat/completions", response_model=ChatResponse)
 async def chat_completions(request: ChatRequest):
+    #print(request)
     try:
+        # Convert ContentItem to Message
+        converted_messages = []
+        for msg in request.messages:
+            if isinstance(msg.content, list):
+                for content_item in msg.content:
+                    if isinstance(content_item, ContentItem):
+                        converted_messages.append(Message(
+                            content=content_item.text,
+                            role=MessageType.USER
+                        ))
+            else:
+                converted_messages.append(msg)
+        
+        print(converted_messages)
         # Create async generator
         async_gen = BlackboxAI.create_async_generator(
             model=request.model,
-            messages=request.messages
+            messages=converted_messages
         )
         
         # Get the first (and only) response
