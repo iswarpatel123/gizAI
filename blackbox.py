@@ -126,12 +126,14 @@ async def chat_completions(request: ChatRequest):
         converted_messages = []
         for msg in request.messages:
             if isinstance(msg.content, list):
-                for content_item in msg.content:
-                    if isinstance(content_item, ContentItem):
-                        converted_messages.append(Message(
-                            content=content_item.text,
-                            role=MessageType.USER
-                        ))
+                # Combine all ContentItem text fields into a single string
+                combined_content = " ".join(
+                    content_item.text for content_item in msg.content if content_item.text
+                )
+                converted_messages.append(Message(
+                    content=combined_content,
+                    role=msg.role or MessageType.USER
+                ))
             else:
                 converted_messages.append(msg)
         

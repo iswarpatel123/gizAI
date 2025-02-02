@@ -143,10 +143,28 @@ class QwenAI:
 
 @app.post("/v1/chat/completions", response_model=ChatResponse)
 async def chat_completions(request: ChatRequest):
+    print(request)
     try:
+        # Convert ContentItem to Message
+        converted_messages = []
+        for msg in request.messages:
+            if isinstance(msg.content, list):
+                # Combine all ContentItem text fields into a single string
+                combined_content = " ".join(
+                    content_item.text for content_item in msg.content if content_item.text
+                )
+                converted_messages.append(Message(
+                    content=combined_content,
+                    role=msg.role or MessageType.USER
+                ))
+            else:
+                converted_messages.append(msg)
+        
+        print(converted_messages)
+        
         async_gen = QwenAI.create_async_generator(
             model=request.model,
-            messages=request.messages
+            messages=converted_messages
         )
         
         response = None
@@ -182,4 +200,4 @@ async def chat_completions(request: ChatRequest):
 # Configuration and startup
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8001)
