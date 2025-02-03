@@ -9,6 +9,19 @@ from aiohttp import ClientSession
 from enum import Enum
 
 def map_model(model: str) -> str:
+    #     model_mapping = {
+    #     "gpt-4-turbo": "claude-sonnet",
+    #     "o1-mini": "chat-o1-mini",
+    #     "gpt-4": "deepseek",
+    #     "o1-preview": "claude-haiku",
+    #     "gpt-4o": "chat-gpt4",
+    #     "gpt-4o-mini": "chat-gpt4m",
+    #     "gpt-4o-2024-08-06": "qwen-coder-32b",
+    #     "gpt-4o-mini-2024-07-18": "chat-gemini-exp-1206",
+    #     "mistral-large": "mistral-large",
+    #     "deepseek-reasoner": "deepseek-reasoner",
+    #     "minimax-01": "minimax-01"
+    # }
     return model
 
 # Type definitions
@@ -215,4 +228,4 @@ async def chat_completions(request: ChatRequest):
 # Configuration and startup
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8002)

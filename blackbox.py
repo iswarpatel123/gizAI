@@ -137,7 +137,7 @@ async def chat_completions(request: ChatRequest):
             else:
                 converted_messages.append(msg)
         
-        print(converted_messages)
+        #print(converted_messages)
         # Create async generator
         async_gen = BlackboxAI.create_async_generator(
             model=request.model,
