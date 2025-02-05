@@ -34,6 +34,10 @@ class MessageType(str, Enum):
     SYSTEM = "system"
     ASSISTANT = "assistant"  # Add assistant
 
+class ModelListResponse(BaseModel):
+    object: str = "list"
+    data: List[Dict[str, str]]
+
 class ImageUrl(BaseModel):
     url: str
 
@@ -168,6 +172,17 @@ class GizAI:
 
 # FastAPI application
 app = FastAPI(title="LLM Proxy Server")
+
+@app.get("/v1/models", response_model=ModelListResponse)
+async def list_models():
+    models = [
+        {"id": "claude-sonnet", "object": "model", "created": "1677610400", "owned_by": "organization"},
+        {"id": "chat-o1-mini", "object": "model", "created": "1677610400", "owned_by": "organization"},
+        {"id": "claude-haiku", "object": "model", "created": "1677610400", "owned_by": "organization"},
+        {"id": "chat-o3-mini-high", "object": "model", "created": "1677610400", "owned_by": "organization"}
+        # Add more models here as needed
+    ]
+    return ModelListResponse(data=models)
 
 @app.post("/v1/chat/completions", response_model=ChatResponse)
 async def chat_completions(request: ChatRequest):

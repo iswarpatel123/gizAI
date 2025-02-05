@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Dict
 import asyncio
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, field_validator
@@ -69,6 +69,10 @@ class Choices(BaseModel):
     message: Union[Message, ResponseMessage]
     finish_reason: str | None = None
     index: int | None = None
+
+class ModelListResponse(BaseModel):
+    object: str = "list"
+    data: List[Dict[str, str]]
 
 class ChatResponse(BaseModel):
     id: str | None = None
@@ -196,6 +200,14 @@ async def chat_completions(request: ChatRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/v1/models", response_model=ModelListResponse)
+async def list_models():
+    models = [
+        {"id": "qwen-2.5-max", "object": "model", "created": "1677610400", "owned_by": "organization"}
+        # Add more models here as needed
+    ]
+    return ModelListResponse(data=models)
 
 # Configuration and startup
 if __name__ == "__main__":
